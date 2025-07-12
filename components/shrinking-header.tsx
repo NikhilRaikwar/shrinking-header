@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 interface NavigationProps {
-  // Add these props to match your existing component structure
   isAuthenticated?: boolean
   onSignIn?: () => void
   onGetStarted?: () => void
@@ -85,33 +84,37 @@ export default function ShrinkingHeader({
 
   return (
     <header
-      className={`fixed top-3.5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 rounded-full ${
+      className={`fixed top-3.5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-in-out rounded-full ${
         isScrolled
-          ? "h-14 bg-white/80 backdrop-blur-xl border border-gray-200/50 scale-95 w-[90%] max-w-2xl shadow-lg"
-          : "h-14 bg-white/60 backdrop-blur-sm w-[95%] max-w-3xl border border-gray-200/30"
+          ? "h-14 bg-black/40 backdrop-blur-xl border border-white/10 scale-95 w-[90%] max-w-2xl shadow-2xl"
+          : "h-16 bg-black/20 backdrop-blur-sm w-[95%] max-w-3xl border border-white/5"
       }`}
     >
-      <div className="mx-auto h-full px-6">
+      <div className="mx-auto h-full px-4 md:px-6">
         <nav className="flex items-center justify-between h-full">
           {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate?.("/")}>
-            <div
-              className={`transition-all duration-300 ease-in-out ${isScrolled ? "w-7 h-7" : "w-8 h-8"} rounded-lg overflow-hidden`}
-            >
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onNavigate?.("/")}>
+            <div className={`transition-all duration-300 ease-in-out ${isScrolled ? "w-8 h-8" : "w-10 h-10"}`}>
               <Image
                 src="/logo.png"
                 alt="BitGuardAI Logo"
-                width={32}
-                height={32}
+                width={40}
+                height={40}
                 className="w-full h-full object-contain"
                 priority
               />
             </div>
-            <span className="font-bold text-base">BitGuardAI</span>
+            <span
+              className={`font-bold text-white transition-all duration-300 ease-in-out ${
+                isScrolled ? "text-lg" : "text-xl"
+              }`}
+            >
+              BitGuardAI
+            </span>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <a
                 key={item.name}
@@ -122,42 +125,18 @@ export default function ShrinkingHeader({
                     item.onClick()
                   }
                 }}
-                className="text-sm text-gray-600 hover:text-gray-900 transition-all duration-300"
+                className="text-white/80 hover:text-white transition-colors duration-200 font-medium"
               >
                 {item.name}
               </a>
             ))}
 
-            {isAuthenticated ? (
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => onNavigate?.("/dashboard")}
-                  size="sm"
-                  variant="outline"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  Dashboard
-                </Button>
-                {/* Add UserDropdown component here when available */}
-              </div>
-            ) : currentPath === "/auth" ? (
-              <Button
-                onClick={handleBackToHome}
-                size="sm"
-                variant="outline"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent"
-              >
-                Back to Home
-              </Button>
-            ) : (
-              <Button
-                onClick={handleGetStarted}
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg transform hover:scale-105"
-              >
-                Connect Wallet
-              </Button>
-            )}
+            <Button
+              onClick={handleGetStarted}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg transform hover:scale-105"
+            >
+              Connect Wallet
+            </Button>
           </div>
 
           {/* Mobile Navigation */}
@@ -167,18 +146,32 @@ export default function ShrinkingHeader({
                 <Button
                   variant="outline"
                   size="icon"
-                  className="bg-white/20 backdrop-blur-sm border border-gray-200/50"
+                  className="bg-black/20 backdrop-blur-sm border border-white/10 text-white hover:bg-black/30"
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent className="bg-white/95 backdrop-blur-xl">
-                <div className="flex flex-col gap-4 mt-8">
+              <SheetContent className="bg-black/90 backdrop-blur-xl border-white/5">
+                <div className="flex flex-col gap-6 mt-8">
+                  <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+                    <div className="w-8 h-8 rounded-lg overflow-hidden">
+                      <Image
+                        src="/logo.png"
+                        alt="BitGuardAI Logo"
+                        width={32}
+                        height={32}
+                        className="w-full h-full object-contain"
+                        priority
+                      />
+                    </div>
+                    <span className="font-bold text-lg text-white">BitGuardAI</span>
+                  </div>
+
                   {navItems.map((item) => (
                     <a
                       key={item.name}
                       href={item.href}
-                      className="text-lg text-gray-600 hover:text-gray-900 transition-colors"
+                      className="text-lg text-white/80 hover:text-white transition-colors py-2"
                       onClick={(e) => {
                         e.preventDefault()
                         setIsMobileMenuOpen(false)
@@ -191,41 +184,17 @@ export default function ShrinkingHeader({
                     </a>
                   ))}
 
-                  {isAuthenticated ? (
-                    <div className="mt-4">
-                      <Button
-                        onClick={() => {
-                          setIsMobileMenuOpen(false)
-                          onNavigate?.("/dashboard")
-                        }}
-                        className="w-full"
-                        variant="outline"
-                      >
-                        Dashboard
-                      </Button>
-                    </div>
-                  ) : currentPath === "/auth" ? (
-                    <Button
-                      onClick={() => {
-                        setIsMobileMenuOpen(false)
-                        handleBackToHome()
-                      }}
-                      variant="outline"
-                      className="border-gray-300 text-gray-700 hover:bg-gray-50 mt-4"
-                    >
-                      Back to Home
-                    </Button>
-                  ) : (
+                  <div className="pt-4 border-t border-white/10">
                     <Button
                       onClick={() => {
                         setIsMobileMenuOpen(false)
                         handleGetStarted()
                       }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white mt-4"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       Connect Wallet
                     </Button>
-                  )}
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
