@@ -3,24 +3,21 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Menu } from "lucide-react"
+import { useAuth, useUser, SignInButton, SignUpButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 interface NavigationProps {
-  isAuthenticated?: boolean
-  onSignIn?: () => void
-  onGetStarted?: () => void
   currentPath?: string
   onNavigate?: (path: string) => void
 }
 
 export default function ShrinkingHeader({
-  isAuthenticated = false,
-  onSignIn,
-  onGetStarted,
   currentPath = "/",
   onNavigate,
 }: NavigationProps) {
+  const { isSignedIn, isLoaded } = useAuth()
+  const { user } = useUser()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -51,12 +48,8 @@ export default function ShrinkingHeader({
     }
   }
 
-  const handleGetStarted = () => {
-    if (isAuthenticated) {
-      onNavigate?.("/dashboard")
-    } else {
-      onGetStarted?.()
-    }
+  const handleGoToDashboard = () => {
+    onNavigate?.("/dashboard")
   }
 
   const handleBackToHome = () => {
@@ -66,7 +59,7 @@ export default function ShrinkingHeader({
   const navItems = []
 
   // Only show Features and About on landing page and when user is not authenticated
-  if (currentPath === "/" && !isAuthenticated) {
+  if (currentPath === "/" && !isSignedIn) {
     navItems.push(
       { name: "Features", href: "#features", onClick: () => scrollToSection("features") },
       { name: "About", href: "#about", onClick: () => scrollToSection("about") },
@@ -74,12 +67,17 @@ export default function ShrinkingHeader({
   }
 
   // Show Dashboard link when authenticated and not on dashboard
-  if (isAuthenticated && currentPath !== "/dashboard") {
+  if (isSignedIn && currentPath !== "/dashboard") {
     navItems.unshift({
       name: "Dashboard",
       href: "/dashboard",
       onClick: () => onNavigate?.("/dashboard"),
     })
+  }
+
+  // Don't render until Clerk is loaded
+  if (!isLoaded) {
+    return null
   }
 
   return (
@@ -131,12 +129,22 @@ export default function ShrinkingHeader({
               </a>
             ))}
 
-            <Button
-              onClick={handleGetStarted}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg transform hover:scale-105"
-            >
-              Connect Wallet
-            </Button>
+            {isSignedIn ? (
+              <Button
+                onClick={handleGoToDashboard}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg transform hover:scale-105"
+              >
+                Go to Dashboard
+              </Button>
+            ) : (
+              <SignInButton mode="modal">
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg transform hover:scale-105"
+                >
+                  Connect Wallet
+                </Button>
+              </SignInButton>
+            )}
           </div>
 
           {/* Mobile Navigation */}
@@ -185,15 +193,26 @@ export default function ShrinkingHeader({
                   ))}
 
                   <div className="pt-4 border-t border-white/10">
-                    <Button
-                      onClick={() => {
-                        setIsMobileMenuOpen(false)
-                        handleGetStarted()
-                      }}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      Connect Wallet
-                    </Button>
+                    {isSignedIn ? (
+                      <Button
+                        onClick={() => {
+                          setIsMobileMenuOpen(false)
+                          handleGoToDashboard()
+                        }}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        Go to Dashboard
+                      </Button>
+                    ) : (
+                      <SignInButton mode="modal">
+                        <Button
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Connect Wallet
+                        </Button>
+                      </SignInButton>
+                    )}
                   </div>
                 </div>
               </SheetContent>
